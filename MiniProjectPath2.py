@@ -2,6 +2,7 @@ import pandas
 import numpy as np
 from sklearn import linear_model 
 from collections import Counter
+from sklearn.model_selection import train_test_split
 
 ''' 
 The following is the starting code for path2 for data reading to make your first step easier.
@@ -86,6 +87,7 @@ def question1():
 # Problem 2: Num Bicyclist Prediction
 def question2():
     print("\n\nQUESTION 2\n************************")
+    print("Approach 1")
     y = dataset_2['Total']
     x_high_temp = []
     x_low_temp = []
@@ -102,7 +104,7 @@ def question2():
     # Concatenate all data and reshape it
     X = np.vstack((x_high_temp, x_low_temp, x_precip))
     X = X.T
-
+ 
     # Train model and collect coefficients
     regr = linear_model.LinearRegression(fit_intercept=True)
     regr.fit(X,y)
@@ -117,6 +119,34 @@ def question2():
     y_pred = np.array(y_pred[0][0])
     r2 = 1 - SSR(y, y_pred) / SST(y)
     print("r2: {:.4f}" .format(r2))
+
+    
+    print("\n\nApproach 2")
+    r2 = 1
+    coeff = []
+    intercept = []
+
+    for i in range(100):
+        y_pred = []
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size=0.2, shuffle=True
+        )
+        regr = linear_model.LinearRegression(fit_intercept=True)
+        regr.fit(X_train,y_train)
+        for j in range(len(X_test)):
+            y_pred.append(regr.coef_[0] * X_test[j][0] + regr.coef_[1] * X_test[j][1] + regr.coef_[2] * X_test[j][2] + regr.intercept_)
+        y_test = np.array(y_test)
+        y_pred = np.array(y_pred)
+        r2_test = 1 - SSR(y_test, y_pred) / SST(y_test)
+        if (r2_test < r2 and r2_test > 0):
+            r2 = r2_test
+            coeff = regr.coef_
+            intercept = regr.intercept_
+    
+    print("Coefficients: High Temp: {:.4f}, Low Temp: {:.4f}, Precipitation: {:.4f}" .format(coeff[0], coeff[1], coeff[2]))
+    print("Intercept: {:.4f}" .format(intercept))
+    print("r2: {:.4f}" .format(r2))
+
     
     print("************************")
 
