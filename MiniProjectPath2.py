@@ -170,7 +170,6 @@ def question2():
         regr.fit(X_train,y_train)
         y_pred = regr.predict(X_test)
         r2_test = metrics.r2_score(y_test, y_pred)
-        print("{}: {:.4f}" .format(i, r2_test))
         if (r2_test < r2):
             r2 = r2_test
             coeff = regr.coef_
