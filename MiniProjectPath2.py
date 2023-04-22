@@ -21,6 +21,7 @@ dataset_2['Williamsburg Bridge']  = pandas.to_numeric(dataset_2['Williamsburg Br
 dataset_2['Total']  = pandas.to_numeric(dataset_2['Total'].replace(',','', regex=True))
 # print(dataset_2.to_string()) #This line will print out your data
 
+
 # Problem 1: Install 3 Sensors
 def question1():
     print("QUESTION 1\n************************")
@@ -87,6 +88,38 @@ def question1():
     for i in max_3_per:
         print("{} Percentage: {:.4f}" .format(i[0], i[1]))
     
+    # Approach 3: Train model with only 3 bridges, use r2 to find the best combination
+    print("\nApproach 3")
+    sum1 = x_Brook + x_Man + x_Queen # Brook, Man, Queen
+    sum2 = x_Brook + x_Man + x_Will # Brook, Man, Will
+    sum3 = x_Brook + x_Queen + x_Will # Brook, Queen, Will
+    sum4 = x_Man + x_Queen + x_Will # Man, Queen, Will
+
+    sum1 = sum1.reshape(-1, 1)
+    sum2 = sum2.reshape(-1, 1)
+    sum3 = sum3.reshape(-1, 1)
+    sum4 = sum4.reshape(-1, 1)
+
+    sum = [sum1, sum2, sum3, sum4]
+    total = x_Brook + x_Man + x_Queen + x_Will
+    r2 = 1
+    index = 0
+
+    for i in range(4):
+        temp_coe, temp_int = train_model(sum[i], y)
+        temp_r2 = cal_r2(y, total, temp_coe, temp_int)
+        if temp_r2 < r2 and temp_r2 > 0:
+            r2, index = temp_r2, i
+    
+    if (index == 0):
+        print("Three optimal bridges: Brook, Man, Queen")
+    elif (index == 1):
+        print("Three optimal bridges: Brook, Man, Will")
+    elif (index == 2):
+        print("Three optimal bridges: Brook, Queen, Will")
+    else:
+        print("Three optimal bridges: Man, Queen, Will")
+
     print("************************")
 
 # Problem 2: Num Bicyclist Prediction
@@ -154,27 +187,10 @@ def question2():
 
     
     print("************************")
-
-    
-    
-def SSR(y_data, y_pred):
-    # Calculate SSR with target data and prediction values
-    SSR = 0
-    for i in range(len(y_data)):
-        SSR += np.square(y_data[i] - y_pred[i])
-    
-    return SSR
-
-def SST(y_data):
-    SST = 0
-    y_bar = np.average(y_data)
-    for i in range(len(y_data)):
-        SST += np.square(y_data[i] - y_bar)
-        
-    return SST
     
 # Problem 3: Classify what day is today based on number of bicyclists
 def question3():
+    print("\n\nQUESTION 3\n************************")
     total_bicyclists = np.array(dataset_2["Total"]).reshape(-1,1)
     actual_days = np.array(dataset_2["Day"])
     X_train, X_test, y_train, y_test = train_test_split(total_bicyclists, actual_days, test_size=0.3, shuffle=False)
@@ -289,6 +305,36 @@ def question3():
     fig.delaxes(ax[1,3]) # Delete unwanted subplot
     fig.suptitle("Histograms Representing the Number of Bicyclists In Each Weekday")
     plt.show()
+
+def SSR(y_data, y_pred):
+    # Calculate SSR with target data and prediction values
+    SSR = 0
+    for i in range(len(y_data)):
+        SSR += np.square(y_data[i] - y_pred[i])
+    
+    return SSR
+
+def SST(y_data):
+    SST = 0
+    y_bar = np.average(y_data)
+    for i in range(len(y_data)):
+        SST += np.square(y_data[i] - y_bar)
+        
+    return SST
+
+def train_model(x, y):
+    # Return r2, coefficients, and intercept
+    regr = linear_model.LinearRegression(fit_intercept=True)
+    regr.fit(x,y)
+    return regr.coef_[0], regr.intercept_
+
+def cal_r2(y, test_data, coeff, intc):
+    y_pred = []
+    for i in range(len(test_data)):
+        y_pred.append(coeff * test_data[i] + intc)
+    y_pred = np.array(y_pred)
+    r2 = 1 - SSR(y, y_pred) / SST(y)
+    return r2
 
 question1()
 question2()
