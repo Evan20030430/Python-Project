@@ -8,6 +8,8 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn import metrics
 from sklearn.svm import SVC
 from sklearn.neural_network import MLPClassifier
+from sklearn.preprocessing import StandardScaler
+
 
 ''' 
 The following is the starting code for path2 for data reading to make your first step easier.
@@ -90,36 +92,173 @@ def question1():
     
     # Approach 3: Train model with only 3 bridges, use r2 to find the best combination
     print("\nApproach 3")
-    sum1 = x_Brook + x_Man + x_Queen # Brook, Man, Queen
-    sum2 = x_Brook + x_Man + x_Will # Brook, Man, Will
-    sum3 = x_Brook + x_Queen + x_Will # Brook, Queen, Will
-    sum4 = x_Man + x_Queen + x_Will # Man, Queen, Will
+    # Train the data with three bridges (use different combinations) for Ridge regression
+    lmbda = np.logspace(start=-1, stop=3, num=51, base=10.0)
 
-    sum1 = sum1.reshape(-1, 1)
-    sum2 = sum2.reshape(-1, 1)
-    sum3 = sum3.reshape(-1, 1)
-    sum4 = sum4.reshape(-1, 1)
+    # Brooklyn, Manhattan, Williamsburg
+    brook_arr = np.array(dataset_2["Brooklyn Bridge"])
+    manhattan_arr = np.array(dataset_2["Manhattan Bridge"])
+    will_arr = np.array(dataset_2["Williamsburg Bridge"])
 
-    sum = [sum1, sum2, sum3, sum4]
-    total = x_Brook + x_Man + x_Queen + x_Will
-    r2 = 1
-    index = 0
+    totals1 = []
+    truetots = np.array(dataset_2["Total"])
 
-    for i in range(4):
-        temp_coe, temp_int = train_model(sum[i], y)
-        temp_r2 = cal_r2(y, total, temp_coe, temp_int)
-        if temp_r2 < r2 and temp_r2 > 0:
-            r2, index = temp_r2, i
+    for brook, man, will in zip(brook_arr, manhattan_arr, will_arr):
+        totals1.append(brook + man + will)
+
+    X_train, X_test, y_train, y_test = train_test_split(
+            totals1, truetots, test_size=0.2, shuffle=True
+        )
     
-    if (index == 0):
-        print("Three optimal bridges: Brook, Man, Queen")
-    elif (index == 1):
-        print("Three optimal bridges: Brook, Man, Will")
-    elif (index == 2):
-        print("Three optimal bridges: Brook, Queen, Will")
-    else:
-        print("Three optimal bridges: Man, Queen, Will")
+    minMSE = 10e1000
+    finr2 = None
+    minMSEpred = None
 
+    for l in lmbda:
+        model = linear_model.Ridge(alpha=l, fit_intercept=True)
+        model.fit(np.array(X_train).reshape(-1,1), y_train)
+        y_pred = model.predict(np.array(X_test).reshape(-1,1))
+        r2score = metrics.r2_score(y_test, y_pred)
+        mse = metrics.mean_squared_error(y_test, y_pred)
+
+        if(mse < minMSE):
+            minMSE = mse
+            minMSEpred = y_pred
+            finr2 = r2score
+
+    print("\nBROOKLYN, MANHATTAN, WILLIAMSBURG")
+
+    print(f"The r2 value for Brooklyn, Manhattan, Williamsburg: {finr2}")
+    print(f"The MSE value for Brooklyn, Manhattan, Williamsburg: {minMSE}")
+
+    plt.scatter(totals1, truetots)
+    plt.plot(X_test, minMSEpred, 'k')
+    plt.grid()
+    plt.xlabel("Three bridge total")
+    plt.ylabel("Four bridge total")
+    plt.suptitle("Brooklyn, Manhattan,  Williamsburg")
+    plt.show()
+
+    # Manhattan, Williamsburg, Queensboro
+    queen_arr = np.array(dataset_2["Queensboro Bridge"])
+
+    totals2 = []
+
+    for man, will, queen in zip(manhattan_arr, will_arr, queen_arr):
+        totals2.append(man + will + queen)
+    
+    X_train, X_test, y_train, y_test = train_test_split(
+            totals2, truetots, test_size=0.2, shuffle=True
+        )
+    
+    minMSE = 10e1000
+    finr2 = None
+    minMSEpred = None
+
+    for l in lmbda:
+        model = linear_model.Ridge(alpha=l, fit_intercept=True)
+        model.fit(np.array(X_train).reshape(-1,1), y_train)
+        y_pred = model.predict(np.array(X_test).reshape(-1,1))
+        r2score = metrics.r2_score(y_test, y_pred)
+        mse = metrics.mean_squared_error(y_test, y_pred)
+
+        if(mse < minMSE):
+            minMSE = mse
+            minMSEpred = y_pred
+            finr2 = r2score
+
+    print("\nMANHATTAN, WILLIAMSBURG, QUEENSBORO")
+
+    print(f"The r2 value for Manhattan, Williamsburg, Queensboro: {finr2}")
+    print(f"The MSE value for Manhattan, Williamsburg, Queensboro: {minMSE}")
+
+    plt.scatter(totals2, truetots)
+    plt.plot(X_test, minMSEpred, 'k')
+    plt.grid()
+    plt.xlabel("Three bridge total")
+    plt.ylabel("Four bridge total")
+    plt.suptitle("Manhattan,  Williamsburg, Queensboro")
+    plt.show()
+
+    # Brooklyn, Williamsburg, Queensboro
+    totals3 = []
+
+    for brook, will, queen in zip(brook_arr, will_arr, queen_arr):
+        totals3.append(brook + will + queen)
+    
+    X_train, X_test, y_train, y_test = train_test_split(
+            totals3, truetots, test_size=0.2, shuffle=True
+        )
+    
+    minMSE = 10e1000
+    finr2 = None
+    minMSEpred = None
+
+    for l in lmbda:
+        model = linear_model.Ridge(alpha=l, fit_intercept=True)
+        model.fit(np.array(X_train).reshape(-1,1), y_train)
+        y_pred = model.predict(np.array(X_test).reshape(-1,1))
+        r2score = metrics.r2_score(y_test, y_pred)
+        mse = metrics.mean_squared_error(y_test, y_pred)
+
+        if(mse < minMSE):
+            minMSE = mse
+            minMSEpred = y_pred
+            finr2 = r2score
+
+    print("\nBROOKLYN, WILLIAMSBURG, QUEENSBORO")
+
+    print(f"The r2 value for Brooklyn, Williamsburg, Queensboro: {finr2}")
+    print(f"The MSE value for Brooklyn, Williamsburg, Queensboro: {minMSE}")
+
+    plt.scatter(totals3, truetots)
+    plt.plot(X_test, minMSEpred, 'k')
+    plt.grid()
+    plt.xlabel("Three bridge total")
+    plt.ylabel("Four bridge total")
+    plt.suptitle("Brooklyn,  Williamsburg, Queensboro")
+    plt.show()
+
+    # Brooklyn, Manhattan, Queensboro
+    totals4 = []
+
+    for brook, man, queen in zip(brook_arr, manhattan_arr, queen_arr):
+        totals4.append(brook + man + queen)
+    
+    X_train, X_test, y_train, y_test = train_test_split(
+            totals4, truetots, test_size=0.2, shuffle=True
+        )
+    
+    minMSE = 10e1000
+    finr2 = None
+    minMSEpred = None
+
+    for l in lmbda:
+        model = linear_model.Ridge(alpha=l, fit_intercept=True)
+        model.fit(np.array(X_train).reshape(-1,1), y_train)
+        y_pred = model.predict(np.array(X_test).reshape(-1,1))
+        r2score = metrics.r2_score(y_test, y_pred)
+        mse = metrics.mean_squared_error(y_test, y_pred)
+
+        if(mse < minMSE):
+            minMSE = mse
+            lowestMSEModel = model
+            minMSEpred = y_pred
+            finr2 = r2score
+
+    print("\nBROOKLYN, MANHATTAN, QUEENSBORO")
+
+    print(f"The r2 value for Brooklyn, Manhattan, Queensboro: {finr2}")
+    print(f"The MSE value for Brooklyn, Manhattan, Queensboro: {minMSE}")
+
+    plt.scatter(totals4, truetots)
+    plt.plot(X_test, minMSEpred, 'k')
+    plt.grid()
+    plt.xlabel("Three bridge total")
+    plt.ylabel("Four bridge total")
+    plt.suptitle("Brooklyn, Manhattan, Queensboro")
+    plt.show()
+    
     print("************************")
 
 # Problem 2: Num Bicyclist Prediction
@@ -178,6 +317,68 @@ def question2():
     print("Coefficients: High Temp: {:.4f}, Low Temp: {:.4f}, Precipitation: {:.4f}" .format(coeff[0], coeff[1], coeff[2]))
     print("Intercept: {:.4f}" .format(intercept))
     print("r2: {:.4f}" .format(r2))
+
+
+    print("\n\nApproach 3")
+    lmbda = np.logspace(start=-1, stop=3, num=51, base=10.0)
+    y = dataset_2['Total']
+    x_high_temp = np.array(dataset_2['High Temp'])
+    x_low_temp = np.array(dataset_2['Low Temp'])
+    x_precip = np.array(dataset_2['Precipitation'])
+
+    # Concatenate all data and reshape it
+    X = np.column_stack((x_high_temp, x_low_temp, x_precip))
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=True)
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
+ 
+    # Train model and collect coefficients
+    maxr2 = 0
+    finMSE = None
+    model = None
+    for l in lmbda:    
+        regr = linear_model.Ridge(alpha = l, fit_intercept=True)
+        regr.fit(X_train, y_train)
+        y_pred = regr.predict(X_test)
+        r2 = metrics.r2_score(y_test, y_pred)
+        mse = metrics.mean_squared_error(y_test, y_pred)
+
+        if(r2 > maxr2):
+            maxr2 = r2
+            model = regr
+            finMSE = mse
+
+    fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(20, 15))
+    axs[0,0].scatter(x_low_temp, y)
+    axs[0,0].set_title("Low Temperature")
+    axs[0,0].set_xlabel("Low Temperature")
+    axs[0,0].set_ylabel("Total Bicycle Traffic")
+
+    axs[0,1].scatter(x_high_temp, y)
+    axs[0,1].set_title("High Temperature")
+    axs[0,1].set_xlabel("High Temperature")
+    axs[0,1].set_ylabel("Total Bicycle Traffic")
+
+    axs[1,0].scatter(x_precip, y)
+    axs[1,0].set_title("Precipitation")
+    axs[1,0].set_xlabel("Precipitation")
+    axs[1,0].set_ylabel("Total Bicycle Traffic")
+
+    fig.delaxes(axs[1,1])
+    fig.suptitle("Comparing Total Bicycle Traffic Against Low Temperature, High Temperature, and Precipitation")
+
+    for i in axs:
+        for j in i:
+            j.grid(True)
+
+    plt.show()
+
+    print("Coefficients: High Temp: {:.4f}, Low Temp: {:.4f}, Precipitation: {:.4f}" .format(model.coef_[0], model.coef_[1], model.coef_[2]))
+    print("Intercept: {:.4f}" .format(model.intercept_))
+    
+    print("r2: {:.4f}" .format(maxr2))
+    print(f"MSE: {finMSE}")
 
     
     print("************************")
@@ -300,35 +501,6 @@ def question3():
     fig.suptitle("Histograms Representing the Number of Bicyclists In Each Weekday")
     plt.show()
 
-def SSR(y_data, y_pred):
-    # Calculate SSR with target data and prediction values
-    SSR = 0
-    for i in range(len(y_data)):
-        SSR += np.square(y_data[i] - y_pred[i])
-    
-    return SSR
-
-def SST(y_data):
-    SST = 0
-    y_bar = np.average(y_data)
-    for i in range(len(y_data)):
-        SST += np.square(y_data[i] - y_bar)
-        
-    return SST
-
-def train_model(x, y):
-    # Return r2, coefficients, and intercept
-    regr = linear_model.LinearRegression(fit_intercept=True)
-    regr.fit(x,y)
-    return regr.coef_[0], regr.intercept_
-
-def cal_r2(y, test_data, coeff, intc):
-    y_pred = []
-    for i in range(len(test_data)):
-        y_pred.append(coeff * test_data[i] + intc)
-    y_pred = np.array(y_pred)
-    r2 = 1 - SSR(y, y_pred) / SST(y)
-    return r2
 
 question1()
 question2()
