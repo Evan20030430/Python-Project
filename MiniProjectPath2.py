@@ -264,62 +264,6 @@ def question1():
 # Problem 2: Num Bicyclist Prediction
 def question2():
     print("\n\nQUESTION 2\n************************")
-    print("Approach 1")
-    y = dataset_2['Total']
-    x_high_temp = []
-    x_low_temp = []
-    x_precip = []
-    x_high_temp.append(dataset_2['High Temp'])
-    x_low_temp.append(dataset_2['Low Temp'])
-    x_precip.append(dataset_2['Precipitation'])
-
-    # Collect all feature data
-    x_high_temp = np.array(x_high_temp)
-    x_low_temp = np.array(x_low_temp)
-    x_precip = np.array(x_precip)
-    
-    # Concatenate all data and reshape it
-    X = np.vstack((x_high_temp, x_low_temp, x_precip))
-    X = X.T
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=True)
- 
-    # Train model and collect coefficients
-    regr = linear_model.LinearRegression(fit_intercept=True)
-    regr.fit(X_train, y_train)
-    print("Coefficients: High Temp: {:.4f}, Low Temp: {:.4f}, Precipitation: {:.4f}" .format(regr.coef_[0], regr.coef_[1], regr.coef_[2]))
-    print("Intercept: {:.4f}" .format(regr.intercept_))
-    
-    # Calculate r2
-    y_pred = regr.predict(X_test)
-    r2 = metrics.r2_score(y_test, y_pred)
-    print("r2: {:.4f}" .format(r2))
-
-    
-    print("\n\nApproach 2")
-    r2 = 1
-    coeff = []
-    intercept = []
-
-    for i in range(100):
-        #y_pred = []
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, shuffle=True
-        )
-        regr = linear_model.LinearRegression(fit_intercept=True)
-        regr.fit(X_train,y_train)
-        y_pred = regr.predict(X_test)
-        r2_test = metrics.r2_score(y_test, y_pred)
-        if (r2_test < r2):
-            r2 = r2_test
-            coeff = regr.coef_
-            intercept = regr.intercept_
-    
-    print("Coefficients: High Temp: {:.4f}, Low Temp: {:.4f}, Precipitation: {:.4f}" .format(coeff[0], coeff[1], coeff[2]))
-    print("Intercept: {:.4f}" .format(intercept))
-    print("r2: {:.4f}" .format(r2))
-
-
-    print("\n\nApproach 3")
     lmbda = np.logspace(start=-1, stop=3, num=51, base=10.0)
     y = dataset_2['Total']
     x_high_temp = np.array(dataset_2['High Temp'])
@@ -379,7 +323,6 @@ def question2():
     
     print("r2: {:.4f}" .format(maxr2))
     print(f"MSE: {finMSE}")
-
     
     print("************************")
     
